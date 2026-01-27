@@ -14,7 +14,7 @@
         body {
             font-family: 'Noto Sans JP', sans-serif;
             background-color: #f0f4f8;
-            touch-action: manipulation; /* ダブルタップによる拡大防止 */
+            touch-action: manipulation;
         }
         .font-mono {
             font-family: 'Roboto Mono', monospace;
@@ -29,25 +29,9 @@
             background: #cbd5e0; 
             border-radius: 4px;
         }
-        /* ボタンクリック時のアニメーション強化 */
         .btn-active:active {
             transform: scale(0.95);
             opacity: 0.9;
-        }
-        /* モーダル表示時のトランジション */
-        .modal-enter {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-        .modal-enter-active {
-            opacity: 1;
-            transform: scale(1);
-            transition: opacity 0.2s, transform 0.2s;
-        }
-        .modal-leave-active {
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.2s, transform 0.2s;
         }
     </style>
 </head>
@@ -55,7 +39,7 @@
 
     <!-- Header -->
     <header class="bg-blue-900 text-white p-4 shadow-md sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
             <h1 class="text-lg md:text-xl font-bold flex items-center gap-2">
                 <i class="fa-solid fa-stopwatch"></i> XC Ski Timer
             </h1>
@@ -68,13 +52,13 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow p-4 max-w-4xl mx-auto w-full relative z-0">
+    <main class="flex-grow p-4 max-w-6xl mx-auto w-full relative z-0">
         
-        <!-- Setup Screen -->
-        <div id="setupScreen" class="bg-white rounded-xl shadow-lg p-6 space-y-6">
+        <!-- Setup Screen (Centered) -->
+        <div id="setupScreen" class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
             <div class="flex justify-between items-center border-b pb-2">
                 <h2 class="text-xl font-bold text-slate-700">大会設定</h2>
-                <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">v2.3 (UI Fix)</span>
+                <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">v2.5 (Sidebar)</span>
             </div>
             
             <!-- Mode Selection -->
@@ -125,38 +109,66 @@
             </button>
         </div>
 
-        <!-- Race Screen -->
-        <div id="raceScreen" class="hidden space-y-4">
-            
-            <!-- Mass Start Master Control -->
-            <div id="massStartControl" class="bg-white rounded-xl shadow-md p-4 hidden sticky top-20 z-40 border-l-4 border-green-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="font-bold text-slate-700 text-sm md:text-base">大会経過時間</h3>
-                        <div id="masterClock" class="font-mono text-3xl md:text-4xl font-bold text-slate-800 tracking-tighter">00:00.00</div>
+        <!-- Race Screen (2 Column Layout) -->
+        <div id="raceScreen" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                
+                <!-- Main Column: Timer List -->
+                <div class="lg:col-span-2 space-y-4">
+                    
+                    <!-- Mass Start Master Control -->
+                    <div id="massStartControl" class="bg-white rounded-xl shadow-md p-4 hidden sticky top-20 z-40 border-l-4 border-green-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-slate-700 text-sm md:text-base">大会経過時間</h3>
+                                <div id="masterClock" class="font-mono text-3xl md:text-4xl font-bold text-slate-800 tracking-tighter">00:00.00</div>
+                            </div>
+                            <button id="masterStartBtn" onclick="triggerMassStart()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 md:px-6 rounded-lg shadow-md transition transform active:scale-95 text-sm md:text-base whitespace-nowrap">
+                                <i class="fa-solid fa-play"></i> 全員スタート
+                            </button>
+                        </div>
                     </div>
-                    <button id="masterStartBtn" onclick="triggerMassStart()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 md:px-6 rounded-lg shadow-md transition transform active:scale-95 text-sm md:text-base whitespace-nowrap">
-                        <i class="fa-solid fa-play"></i> 全員スタート
-                    </button>
+
+                    <!-- Interval Start Info -->
+                    <div id="intervalInfo" class="bg-blue-50 rounded-xl shadow-inner p-3 hidden text-center text-sm text-blue-800">
+                        <i class="fa-solid fa-circle-info"></i> 選手ごとに「スタート」ボタンを押してください
+                    </div>
+
+                    <!-- Athlete List -->
+                    <div id="athleteList" class="space-y-3 pb-8">
+                        <!-- Athletes will be injected here via JS -->
+                    </div>
                 </div>
-            </div>
 
-            <!-- Interval Start Info -->
-            <div id="intervalInfo" class="bg-blue-50 rounded-xl shadow-inner p-3 hidden text-center text-sm text-blue-800">
-                <i class="fa-solid fa-circle-info"></i> 選手ごとに「スタート」ボタンを押してください
-            </div>
+                <!-- Side Column: Ranking (Sticky on Desktop) -->
+                <div class="lg:col-span-1 lg:sticky lg:top-24 order-last lg:order-none">
+                    <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden flex flex-col max-h-[80vh]">
+                        <!-- Header -->
+                        <div class="p-3 bg-slate-50 border-b flex justify-between items-center shrink-0">
+                            <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                                <i class="fa-solid fa-list-ol text-blue-600"></i> 順位表 (タイム順)
+                            </h3>
+                            <button onclick="refreshRanking()" class="text-xs bg-white border border-slate-300 hover:bg-slate-100 text-slate-600 px-2 py-1 rounded shadow-sm transition" title="更新">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- List -->
+                        <div id="rankingListArea" class="flex-grow overflow-y-auto bg-slate-50 min-h-[200px] lg:min-h-0">
+                            <div class="p-6 text-center text-slate-400 text-sm">
+                                まだゴールした選手はいません
+                            </div>
+                        </div>
 
-            <!-- Athlete List -->
-            <div id="athleteList" class="space-y-3 pb-24">
-                <!-- Athletes will be injected here via JS -->
-            </div>
+                        <!-- Footer Action -->
+                        <div class="p-3 border-t bg-white shrink-0">
+                            <button onclick="copyResults()" class="w-full bg-slate-700 text-white py-3 rounded-lg font-bold text-sm hover:bg-slate-800 active:scale-95 transition shadow flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-clipboard"></i> 結果をコピー
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Results Summary Button -->
-            <div class="fixed bottom-6 right-6 z-50">
-                 <button onclick="copyResults()" class="bg-slate-800 hover:bg-slate-900 text-white p-4 rounded-full shadow-xl transition transform active:scale-90 flex items-center gap-2" title="結果をコピー">
-                    <i class="fa-solid fa-clipboard"></i>
-                    <span class="text-xs font-bold">結果コピー</span>
-                </button>
             </div>
         </div>
 
@@ -203,7 +215,6 @@
 
         // --- Initialization ---
         window.onload = () => {
-            // Check if we have preserved data
             const savedInput = document.getElementById('athleteInput').value;
             if(!savedInput) {
                 document.getElementById('athleteInput').value = defaultNames.join('\n');
@@ -236,17 +247,15 @@
                 return;
             }
 
-            // Create Athlete Objects
             athletes = lines.map((name, index) => ({
                 id: index + 1,
                 name: name.trim(),
-                status: 'ready', // ready, running, finished
+                status: 'ready',
                 startTime: null,
                 finishTime: null,
                 duration: 0
             }));
 
-            // Set Mode
             const radios = document.getElementsByName('raceMode');
             for (const radio of radios) {
                 if (radio.checked) {
@@ -255,11 +264,9 @@
                 }
             }
 
-            // UI Transition
             document.getElementById('setupScreen').classList.add('hidden');
             document.getElementById('raceScreen').classList.remove('hidden');
 
-            // Reset Master Controls
             document.getElementById('massStartControl').classList.add('hidden');
             document.getElementById('intervalInfo').classList.add('hidden');
             
@@ -277,8 +284,8 @@
             }
 
             renderAthletes();
+            refreshRanking(); // Initial render of ranking
             
-            // Clear existing interval if any
             if(timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(updateUI, 31);
         }
@@ -296,7 +303,6 @@
                 let buttonHtml = '';
                 let timeDisplayHtml = '';
 
-                // Time Display Logic
                 if (athlete.status === 'finished') {
                     timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-slate-800">${formatTime(athlete.duration)}</span>`;
                 } else if (athlete.status === 'running') {
@@ -305,7 +311,6 @@
                     timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-slate-300">--:--.--</span>`;
                 }
 
-                // Button Logic
                 if (raceMode === 'mass') {
                     if (athlete.status === 'ready' || athlete.status === 'running') {
                         const isDisabled = !masterStartTime; 
@@ -320,7 +325,6 @@
                         buttonHtml = `<div class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">FINISH</div>`;
                     }
                 } else {
-                    // Interval Mode
                     if (athlete.status === 'ready') {
                         buttonHtml = `
                             <button onclick="athleteStart(${athlete.id})" class="btn-active w-20 md:w-24 h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow">
@@ -370,31 +374,27 @@
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = totalSeconds % 60;
             const centiseconds = Math.floor((ms % 1000) / 10);
-
             const pad = (num) => String(num).padStart(2, '0');
             return `${pad(minutes)}:${pad(seconds)}.${pad(centiseconds)}`;
         }
 
         function triggerMassStart() {
             if (masterStartTime) return; 
-            
             triggerVibration();
             masterStartTime = Date.now();
             isRaceActive = true;
-
             athletes.forEach(a => {
                 if (a.status === 'ready') {
                     a.status = 'running';
                     a.startTime = masterStartTime;
                 }
             });
-
             const btn = document.getElementById('masterStartBtn');
             btn.innerHTML = '<i class="fa-solid fa-flag-checkered"></i> 計測中';
             btn.className = "bg-slate-400 text-white font-bold py-3 px-6 rounded-lg shadow-inner cursor-default text-sm md:text-base";
             btn.onclick = null;
-
             renderAthletes();
+            refreshRanking();
         }
 
         function athleteStart(id) {
@@ -404,6 +404,7 @@
                 athlete.startTime = Date.now();
                 athlete.status = 'running';
                 renderAthletes();
+                refreshRanking();
             }
         }
 
@@ -418,8 +419,8 @@
                 athlete.status = 'finished';
                 
                 renderAthletes();
+                refreshRanking(); // Auto update ranking
 
-                // CHECK ALL FINISHED
                 if (athletes.every(a => a.status === 'finished')) {
                     finishRace();
                 }
@@ -428,7 +429,6 @@
 
         function finishRace() {
             masterFinishTime = Date.now();
-            // Update Master Button status to "Done"
             const btn = document.getElementById('masterStartBtn');
             if (btn) {
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> 全員ゴール';
@@ -440,7 +440,6 @@
         function updateUI() {
             const now = Date.now();
 
-            // Master Clock
             if (raceMode === 'mass') {
                 const clockEl = document.getElementById('masterClock');
                 if (masterFinishTime) {
@@ -452,12 +451,10 @@
                 }
             }
 
-            // Individual Timers
             const liveTimers = document.querySelectorAll('.live-timer');
             liveTimers.forEach(el => {
                 const id = parseInt(el.getAttribute('data-id'));
                 const athlete = athletes.find(a => a.id === id);
-                
                 if (athlete && athlete.status === 'running' && athlete.startTime) {
                     el.innerText = formatTime(now - athlete.startTime);
                 }
@@ -472,19 +469,109 @@
             }
         }
 
-        function copyResults() {
-            const sortedAthletes = [...athletes].sort((a, b) => {
+        function getSortedAthletes() {
+            return [...athletes].sort((a, b) => {
+                // 1. Finished athletes by time
                 if (a.status === 'finished' && b.status === 'finished') return a.duration - b.duration;
+                // 2. Finished athletes come first
                 if (a.status === 'finished') return -1;
                 if (b.status === 'finished') return 1;
+                // 3. Others by ID
                 return a.id - b.id;
             });
+        }
 
+        function refreshRanking() {
+            const sorted = getSortedAthletes();
+            const container = document.getElementById('rankingListArea');
+            container.innerHTML = '';
+
+            const finishedAthletes = sorted.filter(a => a.status === 'finished');
+
+            if(finishedAthletes.length === 0 && sorted.every(a => a.status === 'ready')) {
+                 container.innerHTML = '<div class="p-6 text-center text-slate-400 text-sm">レース待機中</div>';
+                 return;
+            }
+
+            const list = document.createElement('div');
+            list.className = "divide-y divide-slate-200";
+
+            sorted.forEach((athlete, index) => {
+                // Only show rank number for finished athletes
+                const isFinished = athlete.status === 'finished';
+                
+                // If not finished, we place them at the bottom of the visible list
+                // But in sorted array they are already at the bottom.
+                // However, we want the rank number to be based on FINISHED order.
+                // So if not finished, rank is '-'
+                
+                // Recalculate rank index among finished only
+                let rankDisp = '-';
+                if(isFinished) {
+                    // find index in finishedAthletes
+                    const finishIndex = finishedAthletes.indexOf(athlete);
+                    rankDisp = finishIndex + 1;
+                }
+
+                let timeText = '未出走';
+                let timeClass = 'text-slate-400';
+                
+                if (isFinished) {
+                    timeText = formatTime(athlete.duration);
+                    timeClass = 'text-slate-800 font-bold';
+                } else if (athlete.status === 'running') {
+                    timeText = '走行中';
+                    timeClass = 'text-blue-500 font-medium animate-pulse';
+                }
+
+                // Rank badge styling
+                let rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 font-bold text-xs">${rankDisp}</span>`;
+                if(isFinished) {
+                    if(rankDisp === 1) rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-700 font-bold text-xs">1</span>`;
+                    else if(rankDisp === 2) rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 text-slate-700 font-bold text-xs">2</span>`;
+                    else if(rankDisp === 3) rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 font-bold text-xs">3</span>`;
+                    else rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs">${rankDisp}</span>`;
+                }
+
+                const row = document.createElement('div');
+                row.className = `p-3 flex items-center gap-3 ${isFinished ? 'bg-white' : 'bg-slate-50'}`;
+                row.innerHTML = `
+                    <div class="shrink-0">
+                        ${rankBadge}
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <div class="text-sm font-bold text-slate-800 truncate">${athlete.name}</div>
+                    </div>
+                    <div class="shrink-0 text-right font-mono text-sm ${timeClass}">
+                        ${timeText}
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+
+            container.appendChild(list);
+        }
+
+        function copyResults() {
+            const sortedAthletes = getSortedAthletes();
             let text = "【大会結果】\n";
-            sortedAthletes.forEach((a, index) => {
-                let timeStr = a.status === 'finished' ? formatTime(a.duration) : (a.status === 'running' ? '走行中' : '未出走');
-                let rank = a.status === 'finished' ? `${index + 1}位` : '-';
-                text += `${rank} ${timeStr} ${a.name}\n`;
+            let finishedCount = 0;
+            
+            sortedAthletes.forEach((a) => {
+                let timeStr = '';
+                let rankStr = '-';
+                
+                if(a.status === 'finished') {
+                    finishedCount++;
+                    timeStr = formatTime(a.duration);
+                    rankStr = `${finishedCount}位`;
+                } else if (a.status === 'running') {
+                    timeStr = '走行中';
+                } else {
+                    timeStr = '未出走';
+                }
+                
+                text += `${rankStr} ${timeStr} ${a.name}\n`;
             });
 
             const textArea = document.createElement("textarea");
@@ -511,7 +598,6 @@
             document.body.removeChild(textArea);
         }
 
-        // Toast: supports custom message and bg color
         function showToast(message, bgClass = "bg-slate-800") {
             const toast = document.getElementById('toast');
             const msgSpan = document.getElementById('toastMessage');
@@ -525,8 +611,7 @@
             }, 3000);
         }
 
-        // --- Restart Modal Logic (Replaces window.confirm) ---
-        
+        // --- Restart Logic ---
         function requestRestart() {
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
@@ -537,19 +622,15 @@
 
         function executeRestart() {
             closeModal();
-            
-            // Return to setup screen
             document.getElementById('raceScreen').classList.add('hidden');
             document.getElementById('setupScreen').classList.remove('hidden');
             
-            // Clear times but keep names
             athletes = [];
             masterStartTime = null;
             masterFinishTime = null;
             isRaceActive = false;
             if(timerInterval) clearInterval(timerInterval);
             
-            // Update Badge
             updateAthleteCount();
         }
 
