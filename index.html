@@ -58,14 +58,36 @@
         <div id="setupScreen" class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
             <div class="flex justify-between items-center border-b pb-2">
                 <h2 class="text-xl font-bold text-slate-700">大会設定</h2>
-                <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">v3.0 (Lap Support)</span>
+                <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">v5.3 (Race Name)</span>
+            </div>
+
+            <!-- Race Info Input -->
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
+                <h3 class="text-sm font-bold text-slate-600"><i class="fa-solid fa-pen-to-square"></i> 大会情報（成績表用）</h3>
+                
+                <!-- 大会名 -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">大会名</label>
+                    <input type="text" id="raceName" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="例: 第○回 市民スキー大会">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">種目名 / クラス</label>
+                        <input type="text" id="raceTitle" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="例: 一般男子 5km フリー">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">開催日</label>
+                        <input type="date" id="raceDate" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none">
+                    </div>
+                </div>
             </div>
             
             <!-- Mode Selection -->
             <div>
                 <label class="block text-sm font-semibold text-slate-600 mb-2">スタート方式</label>
                 <div class="grid grid-cols-2 gap-4">
-                    <label class="cursor-pointer border-2 border-slate-200 rounded-lg p-4 hover:border-blue-500 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 transition relative group">
+                    <label class="cursor-pointer border-2 border-slate-200 rounded-lg p-4 hover:border-blue-500 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 transition relative group" onclick="toggleIntervalSettings(false)">
                         <input type="radio" name="raceMode" value="mass" checked class="peer sr-only">
                         <div class="text-center">
                             <i class="fa-solid fa-users text-2xl mb-2 text-slate-400 peer-checked:text-blue-600"></i>
@@ -75,33 +97,62 @@
                         <div class="absolute inset-0 border-2 border-transparent peer-checked:border-blue-600 rounded-lg pointer-events-none"></div>
                     </label>
 
-                    <label class="cursor-pointer border-2 border-slate-200 rounded-lg p-4 hover:border-blue-500 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 transition relative">
+                    <label class="cursor-pointer border-2 border-slate-200 rounded-lg p-4 hover:border-blue-500 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 transition relative" onclick="toggleIntervalSettings(true)">
                         <input type="radio" name="raceMode" value="interval" class="peer sr-only">
                         <div class="text-center">
                             <i class="fa-solid fa-person-skiing-nordic text-2xl mb-2 text-slate-400 peer-checked:text-blue-600"></i>
                             <div class="font-bold text-slate-700">個別スタート</div>
-                            <div class="text-xs text-slate-500 mt-1">1人ずつスタート<br>1人ずつゴール</div>
+                            <div class="text-xs text-slate-500 mt-1">1人ずつスタート<br>自動スタート設定可</div>
                         </div>
                         <div class="absolute inset-0 border-2 border-transparent peer-checked:border-blue-600 rounded-lg pointer-events-none"></div>
                     </label>
+                </div>
+
+                <!-- Interval Settings (Hidden by default) -->
+                <div id="intervalSettings" class="hidden mt-4 bg-blue-50 p-4 rounded-lg border border-blue-200 animate-fade-in-down">
+                    <label class="block text-sm font-bold text-blue-800 mb-2">
+                        <i class="fa-solid fa-clock"></i> 自動スタート間隔
+                    </label>
+                    <div class="flex items-center gap-4">
+                        <div class="relative flex-grow">
+                            <input type="number" id="intervalSeconds" min="0" value="30" class="w-full p-2 border border-blue-300 rounded focus:border-blue-500 outline-none text-slate-700 font-mono text-lg text-center" placeholder="秒数">
+                            <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm font-bold">秒</span>
+                        </div>
+                        <div class="text-xs text-blue-600 flex-shrink-0">
+                            ※「0」にすると手動モードになります<br>
+                            ※1人目のスタートを基準にカウントダウン
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Athlete Input -->
             <div>
-                <div class="flex justify-between items-end mb-2">
+                <div class="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-2 gap-2">
                     <label class="block text-sm font-semibold text-slate-600">
                         選手リスト (1行に1名)
                     </label>
-                    <span id="athleteCountBadge" class="text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                    
+                    <!-- Quick Generator -->
+                    <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
+                        <span class="text-xs font-bold text-slate-500 pl-2">人数指定:</span>
+                        <input type="number" id="quickCountInput" class="w-16 p-1 text-center border border-slate-300 rounded text-sm" value="10" min="1" max="100">
+                        <button onclick="requestListGeneration()" class="bg-white hover:bg-slate-200 text-slate-700 border border-slate-300 px-3 py-1 rounded text-xs font-bold transition">
+                            リスト再作成
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <textarea id="athleteInput" rows="10" 
+                        class="w-full border border-slate-300 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+                        placeholder="1. 選手A&#10;2. 選手B&#10;3. 選手C..."
+                        oninput="updateAthleteCount()"></textarea>
+                    <span id="athleteCountBadge" class="absolute bottom-4 right-4 text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded-full shadow-sm opacity-90">
                         現在: 10名
                     </span>
                 </div>
-                <textarea id="athleteInput" rows="10" 
-                    class="w-full border border-slate-300 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
-                    placeholder="1. 選手A&#10;2. 選手B&#10;3. 選手C..."
-                    oninput="updateAthleteCount()"></textarea>
-                <p class="text-xs text-slate-500 mt-1 text-right">※自動的に行数分のストップウォッチが作成されます</p>
+                <p class="text-xs text-slate-500 mt-1 text-right">※リストを直接編集して追加・削除も可能です</p>
             </div>
 
             <button onclick="startRaceSetup()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 text-lg">
@@ -130,8 +181,9 @@
                     </div>
 
                     <!-- Interval Start Info -->
-                    <div id="intervalInfo" class="bg-blue-50 rounded-xl shadow-inner p-3 hidden text-center text-sm text-blue-800">
-                        <i class="fa-solid fa-circle-info"></i> 選手ごとに「スタート」ボタンを押してください
+                    <div id="intervalInfo" class="bg-blue-50 rounded-xl shadow-inner p-3 hidden text-center text-sm text-blue-800 flex justify-between items-center">
+                        <span><i class="fa-solid fa-circle-info"></i> <span id="intervalInfoText">選手ごとに「スタート」ボタンを押してください</span></span>
+                        <div id="volumeIcon" class="text-blue-400"><i class="fa-solid fa-volume-high"></i></div>
                     </div>
 
                     <!-- Athlete List -->
@@ -158,11 +210,13 @@
                         </div>
 
                         <!-- Footer Action -->
-                        <div class="p-3 border-t bg-white shrink-0">
-                            <button onclick="copyResults()" class="w-full bg-slate-700 text-white py-3 rounded-lg font-bold text-sm hover:bg-slate-800 active:scale-95 transition shadow flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-clipboard"></i> 結果をコピー
+                        <div class="p-3 border-t bg-white shrink-0 space-y-2">
+                            <button onclick="downloadCSV()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-sm hover:bg-green-700 active:scale-95 transition shadow flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-file-csv"></i> 成績表CSV出力
                             </button>
-                            <p class="text-[10px] text-slate-400 text-center mt-2">※コピーデータにはラップタイムも含まれます</p>
+                            <button onclick="copyResults()" class="w-full bg-slate-700 text-white py-2 rounded-lg font-bold text-xs hover:bg-slate-800 active:scale-95 transition shadow flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-clipboard"></i> 簡易コピー
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -172,23 +226,21 @@
 
     </main>
 
-    <!-- Custom Modal for Restart Confirmation -->
+    <!-- Generic Modal for Confirmation -->
     <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full transform transition-all scale-100">
-            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-triangle-exclamation text-orange-500"></i> 確認
+            <h3 id="modalTitle" class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <!-- Title injected via JS -->
             </h3>
-            <p class="text-slate-600 mb-6 font-medium">
-                タイムをリセットして、選手設定画面に戻りますか？
-                <br>
-                <span class="text-xs text-slate-400 font-normal mt-2 block">（入力した選手名は保持されます）</span>
-            </p>
+            <div id="modalMessage" class="text-slate-600 mb-6 font-medium">
+                <!-- Message injected via JS -->
+            </div>
             <div class="flex gap-3 justify-end">
                 <button onclick="closeModal()" class="px-4 py-2 rounded-lg text-slate-600 font-bold hover:bg-slate-100 transition">
                     キャンセル
                 </button>
-                <button onclick="executeRestart()" class="px-4 py-2 rounded-lg bg-orange-600 text-white font-bold hover:bg-orange-700 shadow transition flex items-center gap-2">
-                    <i class="fa-solid fa-rotate-left"></i> 実行する
+                <button onclick="executeModalAction()" class="px-4 py-2 rounded-lg bg-orange-600 text-white font-bold hover:bg-orange-700 shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-check"></i> 実行する
                 </button>
             </div>
         </div>
@@ -202,25 +254,44 @@
     <script>
         // --- State Management ---
         let athletes = [];
-        let raceMode = 'mass'; // 'mass' or 'interval'
+        let raceMode = 'mass'; 
+        let intervalSeconds = 0; // 0 means manual
+        let startSequenceBaseTime = null; 
+        let raceName = ''; // Added
+        let raceTitle = '';
+        let raceDate = '';
         let masterStartTime = null;
         let masterFinishTime = null; 
         let timerInterval = null;
         let isRaceActive = false;
+        
+        let pendingModalAction = null; // Store function to execute on modal confirm
+
+        let audioCtx = null;
+        let lastBeepTime = -1;
 
         // --- Default Data ---
-        const defaultNames = Array.from({length: 10}, (_, i) => `${i + 1}. 選手${String.fromCharCode(65 + i)}`); 
+        const generateDefaults = (count) => {
+             return Array.from({length: count}, (_, i) => `${i + 1}. 選手${String.fromCharCode(65 + (i % 26))}${i >= 26 ? Math.floor(i/26) : ''}`);
+        };
 
         // --- Initialization ---
         window.onload = () => {
             const savedInput = document.getElementById('athleteInput').value;
             if(!savedInput) {
-                document.getElementById('athleteInput').value = defaultNames.join('\n');
+                document.getElementById('athleteInput').value = generateDefaults(10).join('\n');
             }
+            document.getElementById('raceDate').valueAsDate = new Date();
             updateAthleteCount();
         };
 
-        // --- Input Helper ---
+        // --- UI Helpers ---
+        function toggleIntervalSettings(show) {
+            const el = document.getElementById('intervalSettings');
+            if(show) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+        }
+
         function updateAthleteCount() {
             const input = document.getElementById('athleteInput').value;
             const lines = input.split('\n').filter(line => line.trim() !== '');
@@ -235,11 +306,109 @@
             }
         }
 
+        // --- Modal Logic (Generic) ---
+        function showModal(title, htmlMessage, action) {
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-orange-500"></i> ${title}`;
+            document.getElementById('modalMessage').innerHTML = htmlMessage;
+            pendingModalAction = action;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.add('hidden');
+            pendingModalAction = null;
+        }
+
+        function executeModalAction() {
+            if(pendingModalAction) pendingModalAction();
+            closeModal();
+        }
+
+        // --- List Generation Logic ---
+        function requestListGeneration() {
+            const count = parseInt(document.getElementById('quickCountInput').value) || 10;
+            if(count < 1) return;
+
+            showModal(
+                "リスト再作成",
+                `現在のリストを消去し、${count}名分の枠を作成しますか？<br><span class='text-xs text-slate-400 font-normal mt-2 block'>※現在の入力内容は失われます</span>`,
+                () => {
+                    const newList = generateDefaults(count);
+                    document.getElementById('athleteInput').value = newList.join('\n');
+                    updateAthleteCount();
+                }
+            );
+        }
+
+        // --- Restart Logic ---
+        function requestRestart() {
+            showModal(
+                "確認",
+                "タイムをリセットして、選手設定画面に戻りますか？<br><span class='text-xs text-slate-400 font-normal mt-2 block'>（入力した選手名は保持されます）</span>",
+                performRestart
+            );
+        }
+
+        function performRestart() {
+            document.getElementById('raceScreen').classList.add('hidden');
+            document.getElementById('setupScreen').classList.remove('hidden');
+            
+            athletes = [];
+            masterStartTime = null;
+            masterFinishTime = null;
+            isRaceActive = false;
+            startSequenceBaseTime = null;
+            if(timerInterval) clearInterval(timerInterval);
+            
+            updateAthleteCount();
+        }
+
+        // --- Audio Logic ---
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if(AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playBeep(type) {
+            if (!audioCtx) return;
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'go') {
+                oscillator.frequency.value = 880; 
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else {
+                oscillator.frequency.value = 440; 
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
         // --- Setup Logic ---
         function startRaceSetup() {
+            initAudio();
+
             const input = document.getElementById('athleteInput').value;
             const lines = input.split('\n').filter(line => line.trim() !== '');
             
+            raceName = document.getElementById('raceName').value || 'クロスカントリースキー大会';
+            raceTitle = document.getElementById('raceTitle').value || '種目未設定';
+            raceDate = document.getElementById('raceDate').value || new Date().toISOString().split('T')[0];
+
             if (lines.length === 0) {
                 showToast("選手名を入力してください", "bg-red-600");
                 return;
@@ -252,7 +421,7 @@
                 startTime: null,
                 finishTime: null,
                 duration: 0,
-                laps: [] // Array of { timestamp: number, duration: number, isFinal: boolean }
+                laps: [] 
             }));
 
             const radios = document.getElementsByName('raceMode');
@@ -262,6 +431,14 @@
                     break;
                 }
             }
+            
+            intervalSeconds = 0;
+            if (raceMode === 'interval') {
+                intervalSeconds = parseInt(document.getElementById('intervalSeconds').value) || 0;
+            }
+
+            startSequenceBaseTime = null;
+            lastBeepTime = -1;
 
             document.getElementById('setupScreen').classList.add('hidden');
             document.getElementById('raceScreen').classList.remove('hidden');
@@ -280,6 +457,11 @@
                 document.getElementById('massStartControl').classList.remove('hidden');
             } else {
                 document.getElementById('intervalInfo').classList.remove('hidden');
+                if (intervalSeconds > 0) {
+                    document.getElementById('intervalInfoText').innerText = `${intervalSeconds}秒間隔スタートモード (1人目から自動)`;
+                } else {
+                    document.getElementById('intervalInfoText').innerText = "選手ごとに「スタート」ボタンを押してください";
+                }
             }
 
             renderAthletes();
@@ -294,7 +476,7 @@
             const list = document.getElementById('athleteList');
             list.innerHTML = '';
 
-            athletes.forEach(athlete => {
+            athletes.forEach((athlete, index) => {
                 const card = document.createElement('div');
                 card.className = `bg-white rounded-xl shadow p-3 md:p-4 flex items-center justify-between border-l-4 transition-colors duration-200 ${getStatusColor(athlete.status)}`;
                 card.id = `card-${athlete.id}`;
@@ -303,23 +485,24 @@
                 let timeDisplayHtml = '';
                 let lapInfoHtml = '';
 
-                // Time Display Logic
                 if (athlete.status === 'finished') {
                     timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-slate-800">${formatTime(athlete.duration)}</span>`;
                 } else if (athlete.status === 'running') {
                     timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-blue-600 live-timer" id="timer-${athlete.id}" data-id="${athlete.id}">00:00.00</span>`;
                 } else {
-                    timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-slate-300">--:--.--</span>`;
+                    if (raceMode === 'interval' && intervalSeconds > 0 && startSequenceBaseTime && athlete.status === 'ready') {
+                        timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-orange-500 countdown-timer" data-index="${index}">待機中</span>`;
+                    } else {
+                        timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-slate-300">--:--.--</span>`;
+                    }
                 }
 
-                // Lap Count Info for card
                 if (athlete.laps.length > 0) {
                     const lastLap = athlete.laps[athlete.laps.length - 1];
                     const label = lastLap.isFinal ? 'Final' : `L${athlete.laps.length}`;
                     lapInfoHtml = `<span class="text-xs font-mono text-slate-500 ml-2">(${label}: ${formatTime(lastLap.duration)})</span>`;
                 }
 
-                // Button Logic
                 if (raceMode === 'mass') {
                     if (athlete.status === 'ready' || athlete.status === 'running') {
                         const isDisabled = !masterStartTime; 
@@ -331,7 +514,6 @@
                                 </button>
                             `;
                         } else {
-                            // Running buttons: LAP and FINISH
                             buttonHtml = `
                                 <div class="flex gap-2">
                                     <button onclick="athleteLap(${athlete.id})" class="btn-active w-16 md:w-20 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold shadow text-sm">
@@ -344,17 +526,25 @@
                             `;
                         }
                     } else {
-                        // Finished
                         buttonHtml = `<div class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">FINISH</div>`;
                     }
                 } else {
-                    // Interval Mode
                     if (athlete.status === 'ready') {
-                        buttonHtml = `
-                            <button onclick="athleteStart(${athlete.id})" class="btn-active w-24 h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow">
-                                スタート
-                            </button>
-                        `;
+                        let isAutoWaiting = (intervalSeconds > 0 && startSequenceBaseTime);
+                        
+                        if (isAutoWaiting) {
+                             buttonHtml = `
+                                <button onclick="athleteStart(${athlete.id})" class="btn-active w-24 h-12 bg-orange-400 hover:bg-orange-500 text-white rounded-lg font-bold shadow text-sm">
+                                    強制開始
+                                </button>
+                            `;
+                        } else {
+                            buttonHtml = `
+                                <button onclick="athleteStart(${athlete.id})" class="btn-active w-24 h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow">
+                                    スタート
+                                </button>
+                            `;
+                        }
                     } else if (athlete.status === 'running') {
                         buttonHtml = `
                             <div class="flex gap-2">
@@ -397,7 +587,6 @@
         }
 
         // --- Core Logic ---
-
         function formatTime(ms) {
             if (ms === null || ms === undefined || ms < 0) return "00:00.00";
             const totalSeconds = Math.floor(ms / 1000);
@@ -408,9 +597,16 @@
             return `${pad(minutes)}:${pad(seconds)}.${pad(centiseconds)}`;
         }
 
+        function formatDiff(diffMs) {
+            if (diffMs === 0) return "0.0";
+            return "+" + formatTime(diffMs);
+        }
+
         function triggerMassStart() {
             if (masterStartTime) return; 
+            initAudio(); 
             triggerVibration();
+            playBeep('go');
             masterStartTime = Date.now();
             isRaceActive = true;
             athletes.forEach(a => {
@@ -428,14 +624,32 @@
         }
 
         function athleteStart(id) {
+            initAudio();
             triggerVibration();
+            
             const athlete = athletes.find(a => a.id === id);
+            const isFirstStart = (athletes.findIndex(a => a.status === 'running' || a.status === 'finished') === -1);
+
             if (athlete && athlete.status === 'ready') {
-                athlete.startTime = Date.now();
+                const now = Date.now();
+                athlete.startTime = now;
                 athlete.status = 'running';
+                
+                if (raceMode === 'interval' && intervalSeconds > 0 && isFirstStart) {
+                    startSequenceBaseTime = now;
+                    playBeep('go'); 
+                }
+
                 renderAthletes();
                 refreshRanking();
             }
+        }
+
+        function autoStartAthlete(athlete, startTime) {
+            athlete.startTime = startTime;
+            athlete.status = 'running';
+            renderAthletes(); 
+            refreshRanking();
         }
 
         function athleteLap(id) {
@@ -444,7 +658,6 @@
             const athlete = athletes.find(a => a.id === id);
             
             if (athlete && athlete.status === 'running') {
-                // Calculate lap duration
                 let lastTime = athlete.startTime;
                 if (athlete.laps.length > 0) {
                     lastTime = athlete.laps[athlete.laps.length - 1].timestamp;
@@ -472,7 +685,6 @@
                 athlete.duration = now - athlete.startTime;
                 athlete.status = 'finished';
 
-                // Record Final Lap
                 let lastTime = athlete.startTime;
                 if (athlete.laps.length > 0) {
                     lastTime = athlete.laps[athlete.laps.length - 1].timestamp;
@@ -518,6 +730,43 @@
                 }
             }
 
+            if (raceMode === 'interval' && intervalSeconds > 0 && startSequenceBaseTime) {
+                athletes.forEach((a, index) => {
+                    if (a.status === 'ready') {
+                        const targetTime = startSequenceBaseTime + (index * intervalSeconds * 1000);
+                        const diff = targetTime - now;
+
+                        const countdownEl = document.querySelector(`.countdown-timer[data-index="${index}"]`);
+                        if (countdownEl) {
+                             if (diff > 0) {
+                                 const sec = Math.ceil(diff / 1000);
+                                 countdownEl.innerText = `あと ${sec}秒`;
+                                 
+                                 if(sec <= 5) countdownEl.classList.add('text-red-600');
+                                 else countdownEl.classList.remove('text-red-600');
+                             } else {
+                                 countdownEl.innerText = "スタート！";
+                             }
+                        }
+
+                        const secondsRemaining = Math.ceil(diff / 1000);
+                        if (secondsRemaining <= 5 && secondsRemaining > 0) {
+                            const currentTimeInt = Math.floor(now / 1000);
+                            if (currentTimeInt > lastBeepTime) {
+                                playBeep('count');
+                                lastBeepTime = currentTimeInt;
+                            }
+                        }
+
+                        if (diff <= 0) {
+                            playBeep('go');
+                            autoStartAthlete(a, targetTime); 
+                            lastBeepTime = Math.floor(now / 1000); 
+                        }
+                    }
+                });
+            }
+
             const liveTimers = document.querySelectorAll('.live-timer');
             liveTimers.forEach(el => {
                 const id = parseInt(el.getAttribute('data-id'));
@@ -529,7 +778,6 @@
         }
 
         // --- Utilities ---
-
         function triggerVibration() {
             if (navigator.vibrate) {
                 navigator.vibrate(50);
@@ -560,13 +808,23 @@
             const list = document.createElement('div');
             list.className = "divide-y divide-slate-200";
 
+            const topTime = finishedAthletes.length > 0 ? finishedAthletes[0].duration : 0;
+
             sorted.forEach((athlete, index) => {
                 const isFinished = athlete.status === 'finished';
                 
                 let rankDisp = '-';
+                let diffDisp = '-';
+                
                 if(isFinished) {
                     const finishIndex = finishedAthletes.indexOf(athlete);
                     rankDisp = finishIndex + 1;
+                    
+                    if(finishIndex === 0) {
+                        diffDisp = '0.0';
+                    } else {
+                        diffDisp = formatDiff(athlete.duration - topTime);
+                    }
                 }
 
                 let timeText = '未出走';
@@ -580,7 +838,6 @@
                     timeClass = 'text-blue-500 font-medium animate-pulse';
                 }
 
-                // Rank badge
                 let rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 font-bold text-xs">${rankDisp}</span>`;
                 if(isFinished) {
                     if(rankDisp === 1) rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-700 font-bold text-xs">1</span>`;
@@ -589,11 +846,10 @@
                     else rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs">${rankDisp}</span>`;
                 }
 
-                // Laps string for display
                 let lapsStr = '';
                 if(athlete.laps.length > 0) {
                     lapsStr = athlete.laps.map((l, i) => {
-                        const label = l.isFinal ? 'Fin' : `L${i+1}`;
+                        const label = l.isFinal ? 'Final' : `L${i+1}`;
                         return `${label}:${formatTime(l.duration)}`;
                     }).join(' | ');
                 }
@@ -607,6 +863,7 @@
                         </div>
                         <div class="flex-grow min-w-0">
                             <div class="text-sm font-bold text-slate-800 truncate">${athlete.name}</div>
+                            ${isFinished ? `<div class="text-[10px] text-slate-500">トップ差: <span class="font-mono">${diffDisp}</span></div>` : ''}
                         </div>
                         <div class="shrink-0 text-right font-mono text-sm ${timeClass}">
                             ${timeText}
@@ -618,6 +875,51 @@
             });
 
             container.appendChild(list);
+        }
+
+        function downloadCSV() {
+            const sortedAthletes = getSortedAthletes();
+            const finishedAthletes = sortedAthletes.filter(a => a.status === 'finished');
+            const topTime = finishedAthletes.length > 0 ? finishedAthletes[0].duration : 0;
+            
+            let csvContent = `大会名,${raceName}\n種目名,${raceTitle}\n開催日,${raceDate}\n\n`;
+            csvContent += "順位,Bib,名前,フィニッシュタイム,時間差,備考\n";
+
+            let finishedCount = 0;
+            sortedAthletes.forEach((a) => {
+                if(a.status !== 'finished') return; 
+                
+                finishedCount++;
+                const rank = finishedCount;
+                const timeStr = formatTime(a.duration);
+                let diffStr = '0.0';
+                
+                if (rank > 1) {
+                    diffStr = "+" + formatTime(a.duration - topTime);
+                }
+
+                let lapInfo = "";
+                if(a.laps.length > 0) {
+                    lapInfo = a.laps.map((l, i) => {
+                        const label = l.isFinal ? 'Final' : `L${i+1}`;
+                        return `${label}:${formatTime(l.duration)}`;
+                    }).join(' | ');
+                }
+
+                csvContent += `${rank},${a.id},${a.name},${timeStr},${diffStr},${lapInfo}\n`;
+            });
+
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `result_${raceDate}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function copyResults() {
@@ -687,29 +989,6 @@
                 toast.style.opacity = '0';
             }, 3000);
         }
-
-        function requestRestart() {
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('modalOverlay').classList.add('hidden');
-        }
-
-        function executeRestart() {
-            closeModal();
-            document.getElementById('raceScreen').classList.add('hidden');
-            document.getElementById('setupScreen').classList.remove('hidden');
-            
-            athletes = [];
-            masterStartTime = null;
-            masterFinishTime = null;
-            isRaceActive = false;
-            if(timerInterval) clearInterval(timerInterval);
-            
-            updateAthleteCount();
-        }
-
     </script>
 </body>
 </html>
