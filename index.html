@@ -58,7 +58,7 @@
         <div id="setupScreen" class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
             <div class="flex justify-between items-center border-b pb-2">
                 <h2 class="text-xl font-bold text-slate-700">大会設定</h2>
-                <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">v2.6</span>
+                <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">v3.0 (Lap Support)</span>
             </div>
             
             <!-- Mode Selection -->
@@ -70,7 +70,7 @@
                         <div class="text-center">
                             <i class="fa-solid fa-users text-2xl mb-2 text-slate-400 peer-checked:text-blue-600"></i>
                             <div class="font-bold text-slate-700">一斉スタート</div>
-                            <div class="text-xs text-slate-500 mt-1">全員同時計測開始<br>ゴール時のみ操作</div>
+                            <div class="text-xs text-slate-500 mt-1">全員同時計測開始<br>ゴール・ラップ時操作</div>
                         </div>
                         <div class="absolute inset-0 border-2 border-transparent peer-checked:border-blue-600 rounded-lg pointer-events-none"></div>
                     </label>
@@ -148,7 +148,6 @@
                             <h3 class="font-bold text-slate-700 flex items-center gap-2">
                                 <i class="fa-solid fa-list-ol text-blue-600"></i> 順位表 (タイム順)
                             </h3>
-                            <!-- 自動更新のため更新ボタン削除 -->
                         </div>
                         
                         <!-- List -->
@@ -163,6 +162,7 @@
                             <button onclick="copyResults()" class="w-full bg-slate-700 text-white py-3 rounded-lg font-bold text-sm hover:bg-slate-800 active:scale-95 transition shadow flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-clipboard"></i> 結果をコピー
                             </button>
+                            <p class="text-[10px] text-slate-400 text-center mt-2">※コピーデータにはラップタイムも含まれます</p>
                         </div>
                     </div>
                 </div>
@@ -251,7 +251,8 @@
                 status: 'ready',
                 startTime: null,
                 finishTime: null,
-                duration: 0
+                duration: 0,
+                laps: [] // Array of { timestamp: number, duration: number, isFinal: boolean }
             }));
 
             const radios = document.getElementsByName('raceMode');
@@ -282,7 +283,7 @@
             }
 
             renderAthletes();
-            refreshRanking(); // Initial render of ranking
+            refreshRanking(); 
             
             if(timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(updateUI, 31);
@@ -300,7 +301,9 @@
 
                 let buttonHtml = '';
                 let timeDisplayHtml = '';
+                let lapInfoHtml = '';
 
+                // Time Display Logic
                 if (athlete.status === 'finished') {
                     timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-slate-800">${formatTime(athlete.duration)}</span>`;
                 } else if (athlete.status === 'running') {
@@ -309,31 +312,59 @@
                     timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-slate-300">--:--.--</span>`;
                 }
 
+                // Lap Count Info for card
+                if (athlete.laps.length > 0) {
+                    const lastLap = athlete.laps[athlete.laps.length - 1];
+                    const label = lastLap.isFinal ? 'Final' : `L${athlete.laps.length}`;
+                    lapInfoHtml = `<span class="text-xs font-mono text-slate-500 ml-2">(${label}: ${formatTime(lastLap.duration)})</span>`;
+                }
+
+                // Button Logic
                 if (raceMode === 'mass') {
                     if (athlete.status === 'ready' || athlete.status === 'running') {
                         const isDisabled = !masterStartTime; 
-                        buttonHtml = `
-                            <button onclick="athleteFinish(${athlete.id})" 
-                                class="btn-active w-20 md:w-24 h-12 rounded-lg font-bold text-white shadow transition-colors ${isDisabled ? 'bg-slate-300 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'}"
-                                id="btn-${athlete.id}" ${isDisabled ? 'disabled' : ''}>
-                                ゴール
-                            </button>
-                        `;
+                        
+                        if(isDisabled) {
+                             buttonHtml = `
+                                <button class="btn-active w-24 h-12 rounded-lg font-bold text-white shadow bg-slate-300 cursor-not-allowed" disabled>
+                                    待機
+                                </button>
+                            `;
+                        } else {
+                            // Running buttons: LAP and FINISH
+                            buttonHtml = `
+                                <div class="flex gap-2">
+                                    <button onclick="athleteLap(${athlete.id})" class="btn-active w-16 md:w-20 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold shadow text-sm">
+                                        ラップ
+                                    </button>
+                                    <button onclick="athleteFinish(${athlete.id})" class="btn-active w-16 md:w-20 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold shadow text-sm">
+                                        ゴール
+                                    </button>
+                                </div>
+                            `;
+                        }
                     } else {
+                        // Finished
                         buttonHtml = `<div class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">FINISH</div>`;
                     }
                 } else {
+                    // Interval Mode
                     if (athlete.status === 'ready') {
                         buttonHtml = `
-                            <button onclick="athleteStart(${athlete.id})" class="btn-active w-20 md:w-24 h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow">
+                            <button onclick="athleteStart(${athlete.id})" class="btn-active w-24 h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow">
                                 スタート
                             </button>
                         `;
                     } else if (athlete.status === 'running') {
                         buttonHtml = `
-                            <button onclick="athleteFinish(${athlete.id})" class="btn-active w-20 md:w-24 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold shadow animate-pulse">
-                                ゴール
-                            </button>
+                            <div class="flex gap-2">
+                                <button onclick="athleteLap(${athlete.id})" class="btn-active w-16 md:w-20 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold shadow text-sm">
+                                    ラップ
+                                </button>
+                                <button onclick="athleteFinish(${athlete.id})" class="btn-active w-16 md:w-20 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold shadow text-sm animate-pulse">
+                                    ゴール
+                                </button>
+                            </div>
                         `;
                     } else {
                         buttonHtml = `<div class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">FINISH</div>`;
@@ -346,8 +377,9 @@
                             <span class="text-xs md:text-sm font-bold text-slate-400">#${athlete.id}</span>
                             <h3 class="font-bold text-base md:text-lg text-slate-800 leading-tight truncate">${athlete.name}</h3>
                         </div>
-                        <div class="mt-1">
+                        <div class="mt-1 flex items-baseline">
                             ${timeDisplayHtml}
+                            ${lapInfoHtml}
                         </div>
                     </div>
                     <div class="">
@@ -406,6 +438,30 @@
             }
         }
 
+        function athleteLap(id) {
+            triggerVibration();
+            const now = Date.now();
+            const athlete = athletes.find(a => a.id === id);
+            
+            if (athlete && athlete.status === 'running') {
+                // Calculate lap duration
+                let lastTime = athlete.startTime;
+                if (athlete.laps.length > 0) {
+                    lastTime = athlete.laps[athlete.laps.length - 1].timestamp;
+                }
+                const lapDuration = now - lastTime;
+                
+                athlete.laps.push({
+                    timestamp: now,
+                    duration: lapDuration,
+                    isFinal: false
+                });
+
+                renderAthletes();
+                refreshRanking();
+            }
+        }
+
         function athleteFinish(id) {
             triggerVibration();
             const now = Date.now();
@@ -415,9 +471,22 @@
                 athlete.finishTime = now;
                 athlete.duration = now - athlete.startTime;
                 athlete.status = 'finished';
+
+                // Record Final Lap
+                let lastTime = athlete.startTime;
+                if (athlete.laps.length > 0) {
+                    lastTime = athlete.laps[athlete.laps.length - 1].timestamp;
+                }
+                const finalLapDuration = now - lastTime;
+
+                athlete.laps.push({
+                    timestamp: now,
+                    duration: finalLapDuration,
+                    isFinal: true
+                });
                 
                 renderAthletes();
-                refreshRanking(); // Auto update ranking
+                refreshRanking();
 
                 if (athletes.every(a => a.status === 'finished')) {
                     finishRace();
@@ -469,12 +538,9 @@
 
         function getSortedAthletes() {
             return [...athletes].sort((a, b) => {
-                // 1. Finished athletes by time
                 if (a.status === 'finished' && b.status === 'finished') return a.duration - b.duration;
-                // 2. Finished athletes come first
                 if (a.status === 'finished') return -1;
                 if (b.status === 'finished') return 1;
-                // 3. Others by ID
                 return a.id - b.id;
             });
         }
@@ -495,18 +561,10 @@
             list.className = "divide-y divide-slate-200";
 
             sorted.forEach((athlete, index) => {
-                // Only show rank number for finished athletes
                 const isFinished = athlete.status === 'finished';
                 
-                // If not finished, we place them at the bottom of the visible list
-                // But in sorted array they are already at the bottom.
-                // However, we want the rank number to be based on FINISHED order.
-                // So if not finished, rank is '-'
-                
-                // Recalculate rank index among finished only
                 let rankDisp = '-';
                 if(isFinished) {
-                    // find index in finishedAthletes
                     const finishIndex = finishedAthletes.indexOf(athlete);
                     rankDisp = finishIndex + 1;
                 }
@@ -522,7 +580,7 @@
                     timeClass = 'text-blue-500 font-medium animate-pulse';
                 }
 
-                // Rank badge styling
+                // Rank badge
                 let rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 font-bold text-xs">${rankDisp}</span>`;
                 if(isFinished) {
                     if(rankDisp === 1) rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-700 font-bold text-xs">1</span>`;
@@ -531,18 +589,30 @@
                     else rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs">${rankDisp}</span>`;
                 }
 
+                // Laps string for display
+                let lapsStr = '';
+                if(athlete.laps.length > 0) {
+                    lapsStr = athlete.laps.map((l, i) => {
+                        const label = l.isFinal ? 'Fin' : `L${i+1}`;
+                        return `${label}:${formatTime(l.duration)}`;
+                    }).join(' | ');
+                }
+
                 const row = document.createElement('div');
-                row.className = `p-3 flex items-center gap-3 ${isFinished ? 'bg-white' : 'bg-slate-50'}`;
+                row.className = `p-3 ${isFinished ? 'bg-white' : 'bg-slate-50'}`;
                 row.innerHTML = `
-                    <div class="shrink-0">
-                        ${rankBadge}
+                    <div class="flex items-center gap-3">
+                        <div class="shrink-0">
+                            ${rankBadge}
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="text-sm font-bold text-slate-800 truncate">${athlete.name}</div>
+                        </div>
+                        <div class="shrink-0 text-right font-mono text-sm ${timeClass}">
+                            ${timeText}
+                        </div>
                     </div>
-                    <div class="flex-grow min-w-0">
-                        <div class="text-sm font-bold text-slate-800 truncate">${athlete.name}</div>
-                    </div>
-                    <div class="shrink-0 text-right font-mono text-sm ${timeClass}">
-                        ${timeText}
-                    </div>
+                    ${lapsStr ? `<div class="mt-1 ml-9 text-[10px] text-slate-500 font-mono truncate">${lapsStr}</div>` : ''}
                 `;
                 list.appendChild(row);
             });
@@ -558,6 +628,7 @@
             sortedAthletes.forEach((a) => {
                 let timeStr = '';
                 let rankStr = '-';
+                let lapStr = '';
                 
                 if(a.status === 'finished') {
                     finishedCount++;
@@ -568,8 +639,16 @@
                 } else {
                     timeStr = '未出走';
                 }
+
+                if(a.laps.length > 0) {
+                    const laps = a.laps.map((l, i) => {
+                        const label = l.isFinal ? 'Final' : `L${i+1}`;
+                        return `${label}: ${formatTime(l.duration)}`;
+                    }).join(', ');
+                    lapStr = ` [${laps}]`;
+                }
                 
-                text += `${rankStr} ${timeStr} ${a.name}\n`;
+                text += `${rankStr} ${timeStr} ${a.name}${lapStr}\n`;
             });
 
             const textArea = document.createElement("textarea");
@@ -609,7 +688,6 @@
             }, 3000);
         }
 
-        // --- Restart Logic ---
         function requestRestart() {
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
