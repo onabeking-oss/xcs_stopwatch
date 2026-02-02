@@ -3,219 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XC Ski Stopwatch</title>
+    <title>CYBER XC TIMER</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Orbitron for Cyber look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            dark: '#050b14',
+                            panel: '#0f172a',
+                            cyan: '#00f3ff',
+                            pink: '#ff00ff',
+                            green: '#39ff14',
+                            yellow: '#ffee00',
+                            dim: 'rgba(0, 243, 255, 0.1)',
+                        }
+                    },
+                    fontFamily: {
+                        cyber: ['"Orbitron"', 'sans-serif'],
+                        mono: ['"Roboto Mono"', 'monospace'],
+                        sans: ['"Noto Sans JP"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'neon-cyan': '0 0 5px #00f3ff, 0 0 10px #00f3ff',
+                        'neon-pink': '0 0 5px #ff00ff, 0 0 10px #ff00ff',
+                        'neon-green': '0 0 5px #39ff14, 0 0 10px #39ff14',
+                        'glass': '0 4px 30px rgba(0, 0, 0, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&family=Noto+Sans+JP:wght@400;700&display=swap');
-        
         body {
+            background-color: #050b14;
+            color: #e2e8f0;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
             font-family: 'Noto Sans JP', sans-serif;
-            background-color: #f0f4f8;
             touch-action: manipulation;
         }
-        .font-mono {
-            font-family: 'Roboto Mono', monospace;
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; border: 1px solid #00f3ff; }
+
+        /* Utilities */
+        .font-cyber { font-family: 'Orbitron', sans-serif; }
+        .text-glow-cyan { text-shadow: 0 0 10px rgba(0, 243, 255, 0.7); }
+        .text-glow-green { text-shadow: 0 0 10px rgba(57, 255, 20, 0.7); }
+        .border-glow { box-shadow: 0 0 8px rgba(0, 243, 255, 0.4); }
+
+        /* Animations */
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(0, 243, 255, 0.6); box-shadow: 0 0 10px rgba(0, 243, 255, 0.4); }
+            50% { border-color: rgba(0, 243, 255, 1); box-shadow: 0 0 20px rgba(0, 243, 255, 0.8); }
         }
-        ::-webkit-scrollbar {
-            width: 8px;
+        .animate-border-pulse { animation: pulse-border 2s infinite; }
+
+        .btn-cyber {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e0; 
-            border-radius: 4px;
-        }
-        .btn-active:active {
-            transform: scale(0.95);
-            opacity: 0.9;
+        .btn-cyber:active { transform: scale(0.96); }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col selection:bg-cyber-cyan selection:text-black">
 
     <!-- Header -->
-    <header class="bg-blue-900 text-white p-4 shadow-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-lg md:text-xl font-bold flex items-center gap-2">
-                <i class="fa-solid fa-stopwatch"></i> XC Ski Timer
+    <header class="border-b border-cyber-cyan/30 bg-cyber-dark/90 backdrop-blur-md sticky top-0 z-50 shadow-neon-cyan">
+        <div class="max-w-7xl mx-auto p-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-cyber font-black italic tracking-wider text-white flex items-center gap-3">
+                <i class="fa-solid fa-stopwatch text-cyber-cyan animate-pulse"></i>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan to-blue-500 text-glow-cyan">CYBER XC</span>
             </h1>
-            <div class="flex gap-2">
-                <button onclick="requestRestart()" class="text-xs bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded text-white transition font-bold shadow flex items-center gap-1">
-                    <i class="fa-solid fa-rotate-left"></i> 再レース
-                </button>
-            </div>
+            <button onclick="requestRestart()" class="btn-cyber bg-cyber-pink/20 hover:bg-cyber-pink/40 border border-cyber-pink text-cyber-pink px-4 py-2 text-xs font-bold transition flex items-center gap-2 hover:shadow-neon-pink">
+                <i class="fa-solid fa-rotate-left"></i> RESTART
+            </button>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow p-4 max-w-6xl mx-auto w-full relative z-0">
+    <main class="flex-grow p-4 md:p-6 max-w-7xl mx-auto w-full relative z-0">
         
-        <!-- Setup Screen (Centered) -->
-        <div id="setupScreen" class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h2 class="text-xl font-bold text-slate-700">大会設定</h2>
-                <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">v5.3 (Race Name)</span>
+        <!-- Setup Screen -->
+        <div id="setupScreen" class="max-w-3xl mx-auto glass-panel rounded-none md:rounded-xl shadow-2xl p-6 md:p-8 space-y-8 animate-fade-in-up border-t-4 border-cyber-cyan">
+            <div class="flex justify-between items-end border-b border-gray-700 pb-4">
+                <h2 class="text-2xl font-cyber font-bold text-white flex items-center gap-2">
+                    <span class="text-cyber-cyan">>></span> SYSTEM SETUP
+                </h2>
+                <span class="text-xs font-mono text-gray-400 bg-gray-900 px-2 py-1 rounded border border-gray-700">v5.3 CYBER</span>
             </div>
 
-            <!-- Race Info Input -->
-            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
-                <h3 class="text-sm font-bold text-slate-600"><i class="fa-solid fa-pen-to-square"></i> 大会情報（成績表用）</h3>
+            <!-- Race Info -->
+            <div class="bg-gray-900/50 p-6 border border-gray-700 rounded-lg space-y-5">
+                <h3 class="text-sm font-bold text-cyber-cyan uppercase tracking-widest"><i class="fa-solid fa-database"></i> RACE DATA</h3>
                 
-                <!-- 大会名 -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">大会名</label>
-                    <input type="text" id="raceName" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="例: 第○回 市民スキー大会">
+                    <label class="block text-xs font-bold text-gray-400 mb-1">大会名 / EVENT NAME</label>
+                    <input type="text" id="raceName" class="w-full p-3 bg-black border border-gray-600 rounded text-white focus:border-cyber-cyan focus:shadow-neon-cyan outline-none transition font-mono" placeholder="例: WINTER CUP 2026">
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">種目名 / クラス</label>
-                        <input type="text" id="raceTitle" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none" placeholder="例: 一般男子 5km フリー">
+                        <label class="block text-xs font-bold text-gray-400 mb-1">種目 / CATEGORY</label>
+                        <input type="text" id="raceTitle" class="w-full p-3 bg-black border border-gray-600 rounded text-white focus:border-cyber-cyan focus:shadow-neon-cyan outline-none transition font-mono" placeholder="例: MEN 10km FREE">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">開催日</label>
-                        <input type="date" id="raceDate" class="w-full p-2 border border-slate-300 rounded focus:border-blue-500 outline-none">
+                        <label class="block text-xs font-bold text-gray-400 mb-1">開催日 / DATE</label>
+                        <input type="date" id="raceDate" class="w-full p-3 bg-black border border-gray-600 rounded text-white focus:border-cyber-cyan focus:shadow-neon-cyan outline-none transition font-mono [color-scheme:dark]">
                     </div>
                 </div>
             </div>
             
             <!-- Mode Selection -->
-            <div>
-                <label class="block text-sm font-semibold text-slate-600 mb-2">スタート方式</label>
+            <div class="space-y-4">
+                <h3 class="text-sm font-bold text-cyber-cyan uppercase tracking-widest"><i class="fa-solid fa-sliders"></i> START MODE</h3>
                 <div class="grid grid-cols-2 gap-4">
-                    <label class="cursor-pointer border-2 border-slate-200 rounded-lg p-4 hover:border-blue-500 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 transition relative group" onclick="toggleIntervalSettings(false)">
+                    <label class="cursor-pointer border border-gray-600 bg-gray-900/50 p-4 hover:border-cyber-cyan hover:bg-cyber-cyan/10 transition group relative" onclick="toggleIntervalSettings(false)">
                         <input type="radio" name="raceMode" value="mass" checked class="peer sr-only">
-                        <div class="text-center">
-                            <i class="fa-solid fa-users text-2xl mb-2 text-slate-400 peer-checked:text-blue-600"></i>
-                            <div class="font-bold text-slate-700">一斉スタート</div>
-                            <div class="text-xs text-slate-500 mt-1">全員同時計測開始<br>ゴール・ラップ時操作</div>
+                        <div class="text-center relative z-10">
+                            <i class="fa-solid fa-users text-3xl mb-3 text-gray-500 peer-checked:text-cyber-cyan transition-colors"></i>
+                            <div class="font-cyber font-bold text-white text-lg">MASS START</div>
+                            <div class="text-xs text-gray-400 mt-1">一斉スタート</div>
                         </div>
-                        <div class="absolute inset-0 border-2 border-transparent peer-checked:border-blue-600 rounded-lg pointer-events-none"></div>
+                        <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cyber-cyan peer-checked:shadow-neon-cyan opacity-50 transition-all"></div>
+                        <div class="absolute top-0 right-0 p-1">
+                            <div class="w-2 h-2 rounded-full bg-gray-600 peer-checked:bg-cyber-cyan peer-checked:shadow-[0_0_5px_#00f3ff]"></div>
+                        </div>
                     </label>
 
-                    <label class="cursor-pointer border-2 border-slate-200 rounded-lg p-4 hover:border-blue-500 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 transition relative" onclick="toggleIntervalSettings(true)">
+                    <label class="cursor-pointer border border-gray-600 bg-gray-900/50 p-4 hover:border-cyber-green hover:bg-cyber-green/10 transition relative" onclick="toggleIntervalSettings(true)">
                         <input type="radio" name="raceMode" value="interval" class="peer sr-only">
-                        <div class="text-center">
-                            <i class="fa-solid fa-person-skiing-nordic text-2xl mb-2 text-slate-400 peer-checked:text-blue-600"></i>
-                            <div class="font-bold text-slate-700">個別スタート</div>
-                            <div class="text-xs text-slate-500 mt-1">1人ずつスタート<br>自動スタート設定可</div>
+                        <div class="text-center relative z-10">
+                            <i class="fa-solid fa-person-skiing-nordic text-3xl mb-3 text-gray-500 peer-checked:text-cyber-green transition-colors"></i>
+                            <div class="font-cyber font-bold text-white text-lg">INTERVAL</div>
+                            <div class="text-xs text-gray-400 mt-1">個別スタート</div>
                         </div>
-                        <div class="absolute inset-0 border-2 border-transparent peer-checked:border-blue-600 rounded-lg pointer-events-none"></div>
+                        <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cyber-green peer-checked:shadow-neon-green opacity-50 transition-all"></div>
+                        <div class="absolute top-0 right-0 p-1">
+                            <div class="w-2 h-2 rounded-full bg-gray-600 peer-checked:bg-cyber-green peer-checked:shadow-[0_0_5px_#39ff14]"></div>
+                        </div>
                     </label>
                 </div>
 
-                <!-- Interval Settings (Hidden by default) -->
-                <div id="intervalSettings" class="hidden mt-4 bg-blue-50 p-4 rounded-lg border border-blue-200 animate-fade-in-down">
-                    <label class="block text-sm font-bold text-blue-800 mb-2">
-                        <i class="fa-solid fa-clock"></i> 自動スタート間隔
+                <!-- Interval Settings -->
+                <div id="intervalSettings" class="hidden mt-4 bg-cyber-green/5 p-4 border border-cyber-green/30 rounded relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-cyber-green"></div>
+                    <label class="block text-sm font-bold text-cyber-green mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-stopwatch-20"></i> AUTO START INTERVAL
                     </label>
                     <div class="flex items-center gap-4">
-                        <div class="relative flex-grow">
-                            <input type="number" id="intervalSeconds" min="0" value="30" class="w-full p-2 border border-blue-300 rounded focus:border-blue-500 outline-none text-slate-700 font-mono text-lg text-center" placeholder="秒数">
-                            <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm font-bold">秒</span>
+                        <div class="relative flex-grow max-w-[200px]">
+                            <input type="number" id="intervalSeconds" min="0" value="30" class="w-full p-2 bg-black border border-cyber-green text-cyber-green font-cyber text-2xl text-center outline-none focus:shadow-neon-green rounded" placeholder="30">
+                            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs font-bold">SEC</span>
                         </div>
-                        <div class="text-xs text-blue-600 flex-shrink-0">
-                            ※「0」にすると手動モードになります<br>
-                            ※1人目のスタートを基準にカウントダウン
+                        <div class="text-xs text-gray-400">
+                            「0」= Manual Mode (手動)<br>
+                            Setting > 0 = Auto Countdown
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Athlete Input -->
-            <div>
-                <div class="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-2 gap-2">
-                    <label class="block text-sm font-semibold text-slate-600">
-                        選手リスト (1行に1名)
+            <div class="space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4">
+                    <label class="text-sm font-bold text-cyber-cyan uppercase tracking-widest">
+                        <i class="fa-solid fa-list"></i> ENTRY LIST
                     </label>
                     
-                    <!-- Quick Generator -->
-                    <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
-                        <span class="text-xs font-bold text-slate-500 pl-2">人数指定:</span>
-                        <input type="number" id="quickCountInput" class="w-16 p-1 text-center border border-slate-300 rounded text-sm" value="10" min="1" max="100">
-                        <button onclick="requestListGeneration()" class="bg-white hover:bg-slate-200 text-slate-700 border border-slate-300 px-3 py-1 rounded text-xs font-bold transition">
-                            リスト再作成
+                    <div class="flex items-center gap-2 bg-gray-800 p-1 rounded border border-gray-600">
+                        <span class="text-xs font-bold text-gray-400 pl-2">QUICK GEN:</span>
+                        <input type="number" id="quickCountInput" class="w-16 p-1 text-center bg-black border border-gray-600 text-white rounded text-sm" value="10" min="1" max="100">
+                        <button onclick="requestListGeneration()" class="bg-gray-700 hover:bg-gray-600 text-white border border-gray-500 px-3 py-1 rounded text-xs font-bold transition">
+                            EXECUTE
                         </button>
                     </div>
                 </div>
                 
-                <div class="relative">
-                    <textarea id="athleteInput" rows="10" 
-                        class="w-full border border-slate-300 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
-                        placeholder="1. 選手A&#10;2. 選手B&#10;3. 選手C..."
+                <div class="relative group">
+                    <textarea id="athleteInput" rows="8" 
+                        class="w-full bg-black border border-gray-600 rounded p-4 font-mono text-sm text-white focus:border-cyber-cyan focus:shadow-neon-cyan outline-none transition resize-y" 
+                        placeholder="1. NAME...&#10;2. NAME..."
                         oninput="updateAthleteCount()"></textarea>
-                    <span id="athleteCountBadge" class="absolute bottom-4 right-4 text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded-full shadow-sm opacity-90">
-                        現在: 10名
+                    <span id="athleteCountBadge" class="absolute bottom-4 right-4 text-xs font-bold font-cyber bg-cyber-cyan text-black px-2 py-1 rounded shadow-neon-cyan">
+                        COUNT: 10
                     </span>
                 </div>
-                <p class="text-xs text-slate-500 mt-1 text-right">※リストを直接編集して追加・削除も可能です</p>
             </div>
 
-            <button onclick="startRaceSetup()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 text-lg">
-                レース画面へ移動 <i class="fa-solid fa-arrow-right"></i>
+            <button onclick="startRaceSetup()" class="btn-cyber w-full bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan font-cyber font-bold py-5 text-xl shadow-neon-cyan transition-all mt-4 flex items-center justify-center gap-3">
+                INITIALIZE SYSTEM <i class="fa-solid fa-power-off"></i>
             </button>
         </div>
 
-        <!-- Race Screen (2 Column Layout) -->
+        <!-- Race Screen -->
         <div id="raceScreen" class="hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                <!-- Main Column: Timer List -->
-                <div class="lg:col-span-2 space-y-4">
+                <!-- Main Column -->
+                <div class="lg:col-span-8 space-y-6">
                     
                     <!-- Mass Start Master Control -->
-                    <div id="massStartControl" class="bg-white rounded-xl shadow-md p-4 hidden sticky top-20 z-40 border-l-4 border-green-500">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h3 class="font-bold text-slate-700 text-sm md:text-base">大会経過時間</h3>
-                                <div id="masterClock" class="font-mono text-3xl md:text-4xl font-bold text-slate-800 tracking-tighter">00:00.00</div>
+                    <div id="massStartControl" class="glass-panel p-6 hidden sticky top-24 z-40 border-l-4 border-cyber-green rounded-r-xl shadow-neon-green">
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div class="text-center md:text-left">
+                                <h3 class="font-cyber text-cyber-green text-sm tracking-[0.2em] mb-1">MASTER CLOCK</h3>
+                                <div id="masterClock" class="font-cyber text-5xl md:text-6xl font-black text-white text-glow-green tracking-tighter tabular-nums">00:00.00</div>
                             </div>
-                            <button id="masterStartBtn" onclick="triggerMassStart()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 md:px-6 rounded-lg shadow-md transition transform active:scale-95 text-sm md:text-base whitespace-nowrap">
-                                <i class="fa-solid fa-play"></i> 全員スタート
+                            <button id="masterStartBtn" onclick="triggerMassStart()" class="btn-cyber bg-cyber-green text-black font-black py-4 px-10 rounded shadow-neon-green hover:brightness-110 active:scale-95 text-xl min-w-[200px]">
+                                <i class="fa-solid fa-play"></i> START ALL
                             </button>
                         </div>
                     </div>
 
                     <!-- Interval Start Info -->
-                    <div id="intervalInfo" class="bg-blue-50 rounded-xl shadow-inner p-3 hidden text-center text-sm text-blue-800 flex justify-between items-center">
-                        <span><i class="fa-solid fa-circle-info"></i> <span id="intervalInfoText">選手ごとに「スタート」ボタンを押してください</span></span>
-                        <div id="volumeIcon" class="text-blue-400"><i class="fa-solid fa-volume-high"></i></div>
+                    <div id="intervalInfo" class="glass-panel p-4 hidden border border-cyber-cyan/30 flex justify-between items-center bg-cyber-cyan/5">
+                        <span class="text-cyber-cyan font-mono text-sm flex items-center gap-2"><i class="fa-solid fa-circle-info animate-pulse"></i> <span id="intervalInfoText">READY TO START</span></span>
+                        <div id="volumeIcon" class="text-cyber-cyan text-glow-cyan"><i class="fa-solid fa-volume-high"></i></div>
                     </div>
 
                     <!-- Athlete List -->
-                    <div id="athleteList" class="space-y-3 pb-8">
-                        <!-- Athletes will be injected here via JS -->
+                    <div id="athleteList" class="space-y-4 pb-20">
+                        <!-- Athletes injected here -->
                     </div>
                 </div>
 
-                <!-- Side Column: Ranking (Sticky on Desktop) -->
-                <div class="lg:col-span-1 lg:sticky lg:top-24 order-last lg:order-none">
-                    <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden flex flex-col max-h-[80vh]">
+                <!-- Side Column: Ranking -->
+                <div class="lg:col-span-4 lg:sticky lg:top-24 order-last lg:order-none">
+                    <div class="glass-panel rounded-xl border border-gray-700 overflow-hidden flex flex-col max-h-[80vh] shadow-2xl">
                         <!-- Header -->
-                        <div class="p-3 bg-slate-50 border-b flex justify-between items-center shrink-0">
-                            <h3 class="font-bold text-slate-700 flex items-center gap-2">
-                                <i class="fa-solid fa-list-ol text-blue-600"></i> 順位表 (タイム順)
+                        <div class="p-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center shrink-0">
+                            <h3 class="font-cyber font-bold text-cyber-yellow flex items-center gap-2 tracking-wider">
+                                <i class="fa-solid fa-trophy"></i> LIVE RANKING
                             </h3>
+                            <div class="animate-pulse w-2 h-2 bg-red-500 rounded-full"></div>
                         </div>
                         
                         <!-- List -->
-                        <div id="rankingListArea" class="flex-grow overflow-y-auto bg-slate-50 min-h-[200px] lg:min-h-0">
-                            <div class="p-6 text-center text-slate-400 text-sm">
-                                まだゴールした選手はいません
+                        <div id="rankingListArea" class="flex-grow overflow-y-auto bg-black/40 min-h-[300px] lg:min-h-0 custom-scrollbar">
+                            <div class="p-8 text-center text-gray-600 font-mono text-sm">
+                                WAITING FOR DATA...
                             </div>
                         </div>
 
                         <!-- Footer Action -->
-                        <div class="p-3 border-t bg-white shrink-0 space-y-2">
-                            <button onclick="downloadCSV()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-sm hover:bg-green-700 active:scale-95 transition shadow flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-file-csv"></i> 成績表CSV出力
+                        <div class="p-4 border-t border-gray-700 bg-gray-900/90 shrink-0 space-y-3">
+                            <button onclick="downloadCSV()" class="btn-cyber w-full bg-green-900/40 border border-green-500 text-green-400 py-3 font-bold text-sm hover:bg-green-900/60 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-file-csv"></i> EXPORT CSV
                             </button>
-                            <button onclick="copyResults()" class="w-full bg-slate-700 text-white py-2 rounded-lg font-bold text-xs hover:bg-slate-800 active:scale-95 transition shadow flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-clipboard"></i> 簡易コピー
+                            <button onclick="copyResults()" class="btn-cyber w-full bg-gray-800 border border-gray-600 text-gray-300 py-2 font-bold text-xs hover:bg-gray-700 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-clipboard"></i> COPY TEXT
                             </button>
                         </div>
                     </div>
@@ -226,53 +288,55 @@
 
     </main>
 
-    <!-- Generic Modal for Confirmation -->
-    <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full transform transition-all scale-100">
-            <h3 id="modalTitle" class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <!-- Title injected via JS -->
+    <!-- Modal -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-gray-900 border border-cyber-cyan w-full max-w-sm p-6 relative shadow-neon-cyan transform transition-all scale-100 clip-corner">
+            <!-- Deco corner -->
+            <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyber-cyan"></div>
+            <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyber-cyan"></div>
+
+            <h3 id="modalTitle" class="text-xl font-cyber font-bold text-white mb-4 flex items-center gap-2 uppercase">
+                <!-- Title -->
             </h3>
-            <div id="modalMessage" class="text-slate-600 mb-6 font-medium">
-                <!-- Message injected via JS -->
+            <div id="modalMessage" class="text-gray-300 mb-8 font-mono text-sm">
+                <!-- Message -->
             </div>
             <div class="flex gap-3 justify-end">
-                <button onclick="closeModal()" class="px-4 py-2 rounded-lg text-slate-600 font-bold hover:bg-slate-100 transition">
-                    キャンセル
+                <button onclick="closeModal()" class="px-6 py-2 text-gray-400 font-bold hover:text-white transition font-cyber text-sm">
+                    CANCEL
                 </button>
-                <button onclick="executeModalAction()" class="px-4 py-2 rounded-lg bg-orange-600 text-white font-bold hover:bg-orange-700 shadow transition flex items-center gap-2">
-                    <i class="fa-solid fa-check"></i> 実行する
+                <button onclick="executeModalAction()" class="btn-cyber px-6 py-2 bg-cyber-cyan text-black font-bold hover:bg-white transition shadow-neon-cyan text-sm">
+                    CONFIRM
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-xl opacity-0 transition-opacity duration-300 pointer-events-none z-[80] text-sm md:text-base text-center max-w-[90%]">
-        <span id="toastMessage">通知</span>
+    <!-- Toast -->
+    <div id="toast" class="fixed top-24 left-1/2 transform -translate-x-1/2 bg-gray-900 border border-cyber-pink text-white px-8 py-4 shadow-neon-pink opacity-0 transition-all duration-300 pointer-events-none z-[110] text-sm md:text-base text-center font-bold tracking-wide font-cyber">
+        <span id="toastMessage">NOTIFICATION</span>
     </div>
 
     <script>
         // --- State Management ---
         let athletes = [];
         let raceMode = 'mass'; 
-        let intervalSeconds = 0; // 0 means manual
+        let intervalSeconds = 0; 
         let startSequenceBaseTime = null; 
-        let raceName = ''; // Added
+        let raceName = ''; 
         let raceTitle = '';
         let raceDate = '';
         let masterStartTime = null;
         let masterFinishTime = null; 
         let timerInterval = null;
         let isRaceActive = false;
-        
-        let pendingModalAction = null; // Store function to execute on modal confirm
-
+        let pendingModalAction = null; 
         let audioCtx = null;
         let lastBeepTime = -1;
 
         // --- Default Data ---
         const generateDefaults = (count) => {
-             return Array.from({length: count}, (_, i) => `${i + 1}. 選手${String.fromCharCode(65 + (i % 26))}${i >= 26 ? Math.floor(i/26) : ''}`);
+             return Array.from({length: count}, (_, i) => `${i + 1}. ATHLETE ${String.fromCharCode(65 + (i % 26))}`);
         };
 
         // --- Initialization ---
@@ -296,19 +360,12 @@
             const input = document.getElementById('athleteInput').value;
             const lines = input.split('\n').filter(line => line.trim() !== '');
             const badge = document.getElementById('athleteCountBadge');
-            badge.innerText = `現在: ${lines.length}名`;
-            
-            if(lines.length > 20) {
-                badge.className = "text-xs font-bold bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full";
-                badge.innerText += " (多め)";
-            } else {
-                badge.className = "text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded-full";
-            }
+            badge.innerText = `COUNT: ${lines.length}`;
         }
 
-        // --- Modal Logic (Generic) ---
+        // --- Modal Logic ---
         function showModal(title, htmlMessage, action) {
-            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-orange-500"></i> ${title}`;
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-cyber-yellow"></i> ${title}`;
             document.getElementById('modalMessage').innerHTML = htmlMessage;
             pendingModalAction = action;
             document.getElementById('modalOverlay').classList.remove('hidden');
@@ -324,14 +381,13 @@
             closeModal();
         }
 
-        // --- List Generation Logic ---
         function requestListGeneration() {
             const count = parseInt(document.getElementById('quickCountInput').value) || 10;
             if(count < 1) return;
 
             showModal(
-                "リスト再作成",
-                `現在のリストを消去し、${count}名分の枠を作成しますか？<br><span class='text-xs text-slate-400 font-normal mt-2 block'>※現在の入力内容は失われます</span>`,
+                "GENERATE LIST",
+                `リストを初期化し、${count}名分を作成しますか？<br><span class='text-xs text-gray-500 mt-2 block'>現在の入力は消去されます</span>`,
                 () => {
                     const newList = generateDefaults(count);
                     document.getElementById('athleteInput').value = newList.join('\n');
@@ -340,11 +396,10 @@
             );
         }
 
-        // --- Restart Logic ---
         function requestRestart() {
             showModal(
-                "確認",
-                "タイムをリセットして、選手設定画面に戻りますか？<br><span class='text-xs text-slate-400 font-normal mt-2 block'>（入力した選手名は保持されます）</span>",
+                "SYSTEM RESET",
+                "計測データをリセットし、設定画面に戻りますか？<br><span class='text-xs text-gray-500 mt-2 block'>選手名は保持されます</span>",
                 performRestart
             );
         }
@@ -378,21 +433,21 @@
 
         function playBeep(type) {
             if (!audioCtx) return;
-            
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
 
             if (type === 'go') {
-                oscillator.frequency.value = 880; 
-                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                oscillator.type = 'square';
+                oscillator.frequency.value = 1200; 
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.3);
+                oscillator.stop(audioCtx.currentTime + 0.4);
             } else {
-                oscillator.frequency.value = 440; 
-                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 600; 
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 oscillator.start();
                 oscillator.stop(audioCtx.currentTime + 0.1);
             }
@@ -405,12 +460,12 @@
             const input = document.getElementById('athleteInput').value;
             const lines = input.split('\n').filter(line => line.trim() !== '');
             
-            raceName = document.getElementById('raceName').value || 'クロスカントリースキー大会';
-            raceTitle = document.getElementById('raceTitle').value || '種目未設定';
+            raceName = document.getElementById('raceName').value || 'WINTER EVENT';
+            raceTitle = document.getElementById('raceTitle').value || 'XC RACE';
             raceDate = document.getElementById('raceDate').value || new Date().toISOString().split('T')[0];
 
             if (lines.length === 0) {
-                showToast("選手名を入力してください", "bg-red-600");
+                showToast("INPUT ATHLETE NAMES");
                 return;
             }
 
@@ -447,8 +502,8 @@
             document.getElementById('intervalInfo').classList.add('hidden');
             
             const masterBtn = document.getElementById('masterStartBtn');
-            masterBtn.innerHTML = '<i class="fa-solid fa-play"></i> 全員スタート';
-            masterBtn.className = "bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 md:px-6 rounded-lg shadow-md transition transform active:scale-95 text-sm md:text-base whitespace-nowrap";
+            masterBtn.innerHTML = '<i class="fa-solid fa-play"></i> START ALL';
+            masterBtn.className = "btn-cyber bg-cyber-green text-black font-black py-4 px-10 rounded shadow-neon-green hover:brightness-110 active:scale-95 text-xl min-w-[200px]";
             masterBtn.onclick = triggerMassStart;
             masterStartTime = null;
             masterFinishTime = null; 
@@ -458,9 +513,9 @@
             } else {
                 document.getElementById('intervalInfo').classList.remove('hidden');
                 if (intervalSeconds > 0) {
-                    document.getElementById('intervalInfoText').innerText = `${intervalSeconds}秒間隔スタートモード (1人目から自動)`;
+                    document.getElementById('intervalInfoText').innerText = `AUTO INTERVAL: ${intervalSeconds}s`;
                 } else {
-                    document.getElementById('intervalInfoText').innerText = "選手ごとに「スタート」ボタンを押してください";
+                    document.getElementById('intervalInfoText').innerText = "MANUAL START MODE";
                 }
             }
 
@@ -478,7 +533,19 @@
 
             athletes.forEach((athlete, index) => {
                 const card = document.createElement('div');
-                card.className = `bg-white rounded-xl shadow p-3 md:p-4 flex items-center justify-between border-l-4 transition-colors duration-200 ${getStatusColor(athlete.status)}`;
+                // Cyber Card Styling logic
+                let cardClass = "glass-panel p-4 rounded-lg flex items-center justify-between border-l-4 transition-all duration-300 relative overflow-hidden";
+                let statusColor = "border-gray-600";
+                
+                if (athlete.status === 'finished') {
+                    statusColor = "border-cyber-pink bg-cyber-pink/5";
+                } else if (athlete.status === 'running') {
+                    statusColor = "border-cyber-green bg-cyber-green/5 shadow-[inset_0_0_20px_rgba(57,255,20,0.1)]";
+                } else {
+                    // Ready
+                    statusColor = "border-gray-500 hover:border-cyber-cyan";
+                }
+                card.className = `${cardClass} ${statusColor}`;
                 card.id = `card-${athlete.id}`;
 
                 let buttonHtml = '';
@@ -486,104 +553,77 @@
                 let lapInfoHtml = '';
 
                 if (athlete.status === 'finished') {
-                    timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-slate-800">${formatTime(athlete.duration)}</span>`;
+                    timeDisplayHtml = `<span class="font-cyber text-2xl md:text-4xl font-bold text-white text-glow-pink tracking-widest">${formatTime(athlete.duration)}</span>`;
                 } else if (athlete.status === 'running') {
-                    timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-blue-600 live-timer" id="timer-${athlete.id}" data-id="${athlete.id}">00:00.00</span>`;
+                    timeDisplayHtml = `<span class="font-cyber text-3xl md:text-5xl font-bold text-cyber-cyan text-glow-cyan tracking-widest live-timer tabular-nums" id="timer-${athlete.id}" data-id="${athlete.id}">00:00.00</span>`;
                 } else {
                     if (raceMode === 'interval' && intervalSeconds > 0 && startSequenceBaseTime && athlete.status === 'ready') {
-                        timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-orange-500 countdown-timer" data-index="${index}">待機中</span>`;
+                        timeDisplayHtml = `<span class="font-cyber text-xl md:text-3xl font-bold text-cyber-yellow animate-pulse countdown-timer" data-index="${index}">WAITING</span>`;
                     } else {
-                        timeDisplayHtml = `<span class="font-mono text-xl md:text-2xl font-bold text-slate-300">--:--.--</span>`;
+                        timeDisplayHtml = `<span class="font-cyber text-xl md:text-3xl font-bold text-gray-600">--:--.--</span>`;
                     }
                 }
 
                 if (athlete.laps.length > 0) {
                     const lastLap = athlete.laps[athlete.laps.length - 1];
-                    const label = lastLap.isFinal ? 'Final' : `L${athlete.laps.length}`;
-                    lapInfoHtml = `<span class="text-xs font-mono text-slate-500 ml-2">(${label}: ${formatTime(lastLap.duration)})</span>`;
+                    const label = lastLap.isFinal ? 'FIN' : `L${athlete.laps.length}`;
+                    lapInfoHtml = `<span class="text-xs font-mono text-gray-400 ml-2 border border-gray-700 px-1 rounded bg-black/50">${label}: ${formatTime(lastLap.duration)}</span>`;
                 }
 
+                // Buttons
                 if (raceMode === 'mass') {
                     if (athlete.status === 'ready' || athlete.status === 'running') {
                         const isDisabled = !masterStartTime; 
-                        
                         if(isDisabled) {
-                             buttonHtml = `
-                                <button class="btn-active w-24 h-12 rounded-lg font-bold text-white shadow bg-slate-300 cursor-not-allowed" disabled>
-                                    待機
-                                </button>
-                            `;
+                             buttonHtml = `<button class="btn-cyber w-24 h-12 rounded bg-gray-800 text-gray-500 border border-gray-700 cursor-not-allowed font-bold" disabled>WAIT</button>`;
                         } else {
                             buttonHtml = `
                                 <div class="flex gap-2">
-                                    <button onclick="athleteLap(${athlete.id})" class="btn-active w-16 md:w-20 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold shadow text-sm">
-                                        ラップ
-                                    </button>
-                                    <button onclick="athleteFinish(${athlete.id})" class="btn-active w-16 md:w-20 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold shadow text-sm">
-                                        ゴール
-                                    </button>
-                                </div>
-                            `;
+                                    <button onclick="athleteLap(${athlete.id})" class="btn-cyber w-16 md:w-20 h-12 bg-blue-900/50 border border-blue-500 hover:bg-blue-800 text-blue-300 rounded font-bold text-xs">LAP</button>
+                                    <button onclick="athleteFinish(${athlete.id})" class="btn-cyber w-16 md:w-20 h-12 bg-cyber-pink/20 border border-cyber-pink hover:bg-cyber-pink hover:text-black text-cyber-pink rounded font-bold text-xs shadow-neon-pink">STOP</button>
+                                </div>`;
                         }
                     } else {
-                        buttonHtml = `<div class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">FINISH</div>`;
+                        buttonHtml = `<div class="font-cyber font-bold text-cyber-pink text-xs border border-cyber-pink px-2 py-1 rounded">FINISHED</div>`;
                     }
                 } else {
                     if (athlete.status === 'ready') {
                         let isAutoWaiting = (intervalSeconds > 0 && startSequenceBaseTime);
-                        
                         if (isAutoWaiting) {
-                             buttonHtml = `
-                                <button onclick="athleteStart(${athlete.id})" class="btn-active w-24 h-12 bg-orange-400 hover:bg-orange-500 text-white rounded-lg font-bold shadow text-sm">
-                                    強制開始
-                                </button>
-                            `;
+                             buttonHtml = `<button onclick="athleteStart(${athlete.id})" class="btn-cyber w-24 h-12 bg-cyber-yellow text-black font-bold border border-cyber-yellow rounded shadow-neon-yellow">FORCE</button>`;
                         } else {
-                            buttonHtml = `
-                                <button onclick="athleteStart(${athlete.id})" class="btn-active w-24 h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold shadow">
-                                    スタート
-                                </button>
-                            `;
+                            buttonHtml = `<button onclick="athleteStart(${athlete.id})" class="btn-cyber w-24 h-12 bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan hover:bg-cyber-cyan hover:text-black font-bold rounded shadow-neon-cyan">START</button>`;
                         }
                     } else if (athlete.status === 'running') {
                         buttonHtml = `
                             <div class="flex gap-2">
-                                <button onclick="athleteLap(${athlete.id})" class="btn-active w-16 md:w-20 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold shadow text-sm">
-                                    ラップ
-                                </button>
-                                <button onclick="athleteFinish(${athlete.id})" class="btn-active w-16 md:w-20 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold shadow text-sm animate-pulse">
-                                    ゴール
-                                </button>
-                            </div>
-                        `;
+                                <button onclick="athleteLap(${athlete.id})" class="btn-cyber w-16 md:w-20 h-12 bg-blue-900/50 border border-blue-500 hover:bg-blue-800 text-blue-300 rounded font-bold text-xs">LAP</button>
+                                <button onclick="athleteFinish(${athlete.id})" class="btn-cyber w-16 md:w-20 h-12 bg-cyber-pink/20 border border-cyber-pink hover:bg-cyber-pink hover:text-black text-cyber-pink rounded font-bold text-xs shadow-neon-pink animate-pulse">STOP</button>
+                            </div>`;
                     } else {
-                        buttonHtml = `<div class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">FINISH</div>`;
+                        buttonHtml = `<div class="font-cyber font-bold text-cyber-pink text-xs border border-cyber-pink px-2 py-1 rounded">FINISHED</div>`;
                     }
                 }
 
                 card.innerHTML = `
-                    <div class="flex-grow pr-2">
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-xs md:text-sm font-bold text-slate-400">#${athlete.id}</span>
-                            <h3 class="font-bold text-base md:text-lg text-slate-800 leading-tight truncate">${athlete.name}</h3>
+                    <div class="flex-grow pr-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-mono font-bold text-gray-500 bg-black/50 px-1 border border-gray-800">#${athlete.id}</span>
+                            <h3 class="font-bold text-base md:text-lg text-white leading-tight truncate font-sans tracking-wide">${athlete.name}</h3>
                         </div>
-                        <div class="mt-1 flex items-baseline">
+                        <div class="flex items-baseline flex-wrap">
                             ${timeDisplayHtml}
                             ${lapInfoHtml}
                         </div>
                     </div>
-                    <div class="">
+                    <div class="shrink-0 z-10">
                         ${buttonHtml}
                     </div>
+                    <!-- bg decoration -->
+                    <div class="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none"></div>
                 `;
                 list.appendChild(card);
             });
-        }
-
-        function getStatusColor(status) {
-            if (status === 'finished') return 'border-slate-500 bg-slate-50';
-            if (status === 'running') return 'border-blue-500 bg-white';
-            return 'border-slate-200 bg-white';
         }
 
         // --- Core Logic ---
@@ -616,8 +656,8 @@
                 }
             });
             const btn = document.getElementById('masterStartBtn');
-            btn.innerHTML = '<i class="fa-solid fa-flag-checkered"></i> 計測中';
-            btn.className = "bg-slate-400 text-white font-bold py-3 px-6 rounded-lg shadow-inner cursor-default text-sm md:text-base";
+            btn.innerHTML = '<i class="fa-solid fa-flag-checkered"></i> RUNNING';
+            btn.className = "btn-cyber bg-gray-800 text-gray-400 border border-gray-600 font-bold py-4 px-10 rounded text-xl cursor-default min-w-[200px]";
             btn.onclick = null;
             renderAthletes();
             refreshRanking();
@@ -710,8 +750,8 @@
             masterFinishTime = Date.now();
             const btn = document.getElementById('masterStartBtn');
             if (btn) {
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> 全員ゴール';
-                btn.className = "bg-slate-800 text-white font-bold py-3 px-6 rounded-lg shadow-inner cursor-default text-sm md:text-base";
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> ALL FINISHED';
+                btn.className = "btn-cyber bg-gray-900 text-cyber-green border border-cyber-green font-bold py-4 px-10 rounded text-xl cursor-default min-w-[200px]";
             }
         }
 
@@ -740,12 +780,12 @@
                         if (countdownEl) {
                              if (diff > 0) {
                                  const sec = Math.ceil(diff / 1000);
-                                 countdownEl.innerText = `あと ${sec}秒`;
+                                 countdownEl.innerText = `-${sec}s`;
                                  
-                                 if(sec <= 5) countdownEl.classList.add('text-red-600');
-                                 else countdownEl.classList.remove('text-red-600');
+                                 if(sec <= 5) countdownEl.className = "font-cyber text-xl md:text-3xl font-bold text-red-500 animate-ping countdown-timer";
+                                 else countdownEl.className = "font-cyber text-xl md:text-3xl font-bold text-cyber-yellow countdown-timer";
                              } else {
-                                 countdownEl.innerText = "スタート！";
+                                 countdownEl.innerText = "GO!";
                              }
                         }
 
@@ -801,12 +841,12 @@
             const finishedAthletes = sorted.filter(a => a.status === 'finished');
 
             if(finishedAthletes.length === 0 && sorted.every(a => a.status === 'ready')) {
-                 container.innerHTML = '<div class="p-6 text-center text-slate-400 text-sm">レース待機中</div>';
+                 container.innerHTML = '<div class="p-8 text-center text-gray-600 font-mono text-sm">READY TO RACE</div>';
                  return;
             }
 
             const list = document.createElement('div');
-            list.className = "divide-y divide-slate-200";
+            list.className = "divide-y divide-gray-800";
 
             const topTime = finishedAthletes.length > 0 ? finishedAthletes[0].duration : 0;
 
@@ -819,57 +859,53 @@
                 if(isFinished) {
                     const finishIndex = finishedAthletes.indexOf(athlete);
                     rankDisp = finishIndex + 1;
-                    
-                    if(finishIndex === 0) {
-                        diffDisp = '0.0';
-                    } else {
-                        diffDisp = formatDiff(athlete.duration - topTime);
-                    }
+                    if(finishIndex === 0) diffDisp = '0.0';
+                    else diffDisp = formatDiff(athlete.duration - topTime);
                 }
 
-                let timeText = '未出走';
-                let timeClass = 'text-slate-400';
+                let timeText = 'DNS';
+                let timeClass = 'text-gray-600';
                 
                 if (isFinished) {
                     timeText = formatTime(athlete.duration);
-                    timeClass = 'text-slate-800 font-bold';
+                    timeClass = 'text-cyber-yellow font-bold text-glow-cyan';
                 } else if (athlete.status === 'running') {
-                    timeText = '走行中';
-                    timeClass = 'text-blue-500 font-medium animate-pulse';
+                    timeText = 'RUN';
+                    timeClass = 'text-cyber-cyan animate-pulse';
                 }
 
-                let rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 font-bold text-xs">${rankDisp}</span>`;
+                let rankStyle = "bg-gray-800 text-gray-500";
                 if(isFinished) {
-                    if(rankDisp === 1) rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-700 font-bold text-xs">1</span>`;
-                    else if(rankDisp === 2) rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 text-slate-700 font-bold text-xs">2</span>`;
-                    else if(rankDisp === 3) rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 font-bold text-xs">3</span>`;
-                    else rankBadge = `<span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs">${rankDisp}</span>`;
+                    if(rankDisp === 1) rankStyle = "bg-yellow-500 text-black shadow-neon-yellow";
+                    else if(rankDisp === 2) rankStyle = "bg-gray-300 text-black";
+                    else if(rankDisp === 3) rankStyle = "bg-orange-600 text-white";
+                    else rankStyle = "bg-gray-700 text-white";
                 }
 
                 let lapsStr = '';
                 if(athlete.laps.length > 0) {
                     lapsStr = athlete.laps.map((l, i) => {
-                        const label = l.isFinal ? 'Final' : `L${i+1}`;
+                        const label = l.isFinal ? 'F' : `L${i+1}`;
                         return `${label}:${formatTime(l.duration)}`;
                     }).join(' | ');
                 }
 
                 const row = document.createElement('div');
-                row.className = `p-3 ${isFinished ? 'bg-white' : 'bg-slate-50'}`;
+                row.className = `p-3 flex flex-col gap-1 ${isFinished ? 'bg-white/5' : ''}`;
                 row.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="shrink-0">
-                            ${rankBadge}
+                        <div class="shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold font-cyber ${rankStyle}">
+                            ${rankDisp}
                         </div>
                         <div class="flex-grow min-w-0">
-                            <div class="text-sm font-bold text-slate-800 truncate">${athlete.name}</div>
-                            ${isFinished ? `<div class="text-[10px] text-slate-500">トップ差: <span class="font-mono">${diffDisp}</span></div>` : ''}
+                            <div class="text-sm font-bold text-white truncate font-sans">${athlete.name}</div>
+                            ${isFinished ? `<div class="text-[10px] text-gray-400 font-mono">DIFF: <span class="text-cyber-pink">${diffDisp}</span></div>` : ''}
                         </div>
-                        <div class="shrink-0 text-right font-mono text-sm ${timeClass}">
+                        <div class="shrink-0 text-right font-cyber text-sm ${timeClass}">
                             ${timeText}
                         </div>
                     </div>
-                    ${lapsStr ? `<div class="mt-1 ml-9 text-[10px] text-slate-500 font-mono truncate">${lapsStr}</div>` : ''}
+                    ${lapsStr ? `<div class="ml-11 text-[10px] text-gray-500 font-mono truncate border-l border-gray-700 pl-2">${lapsStr}</div>` : ''}
                 `;
                 list.appendChild(row);
             });
@@ -882,8 +918,8 @@
             const finishedAthletes = sortedAthletes.filter(a => a.status === 'finished');
             const topTime = finishedAthletes.length > 0 ? finishedAthletes[0].duration : 0;
             
-            let csvContent = `大会名,${raceName}\n種目名,${raceTitle}\n開催日,${raceDate}\n\n`;
-            csvContent += "順位,Bib,名前,フィニッシュタイム,時間差,備考\n";
+            let csvContent = `EVENT,${raceName}\nCATEGORY,${raceTitle}\nDATE,${raceDate}\n\n`;
+            csvContent += "RANK,BIB,NAME,TIME,DIFF,LAPS\n";
 
             let finishedCount = 0;
             sortedAthletes.forEach((a) => {
@@ -924,33 +960,24 @@
 
         function copyResults() {
             const sortedAthletes = getSortedAthletes();
-            let text = "【大会結果】\n";
+            let text = `${raceName} / ${raceTitle} (${raceDate})\n\n`;
             let finishedCount = 0;
             
             sortedAthletes.forEach((a) => {
                 let timeStr = '';
                 let rankStr = '-';
-                let lapStr = '';
                 
                 if(a.status === 'finished') {
                     finishedCount++;
                     timeStr = formatTime(a.duration);
-                    rankStr = `${finishedCount}位`;
+                    rankStr = `${finishedCount}`;
                 } else if (a.status === 'running') {
-                    timeStr = '走行中';
+                    timeStr = 'RUN';
                 } else {
-                    timeStr = '未出走';
-                }
-
-                if(a.laps.length > 0) {
-                    const laps = a.laps.map((l, i) => {
-                        const label = l.isFinal ? 'Final' : `L${i+1}`;
-                        return `${label}: ${formatTime(l.duration)}`;
-                    }).join(', ');
-                    lapStr = ` [${laps}]`;
+                    timeStr = 'DNS';
                 }
                 
-                text += `${rankStr} ${timeStr} ${a.name}${lapStr}\n`;
+                text += `#${rankStr} ${timeStr} ${a.name}\n`;
             });
 
             const textArea = document.createElement("textarea");
@@ -964,26 +991,20 @@
             
             try {
                 const successful = document.execCommand('copy');
-                if(successful) {
-                    showToast("結果をクリップボードに<br class='md:hidden'>コピーしました");
-                } else {
-                    showToast("コピーに失敗しました", "bg-red-600");
-                }
+                if(successful) showToast("COPIED TO CLIPBOARD");
+                else showToast("COPY FAILED");
             } catch (err) {
-                console.error('Copy failed', err);
-                showToast("コピーに失敗しました", "bg-red-600");
+                showToast("COPY FAILED");
             }
             
             document.body.removeChild(textArea);
         }
 
-        function showToast(message, bgClass = "bg-slate-800") {
+        function showToast(message) {
             const toast = document.getElementById('toast');
             const msgSpan = document.getElementById('toastMessage');
             
             msgSpan.innerHTML = message;
-            toast.className = `fixed top-20 left-1/2 transform -translate-x-1/2 text-white px-6 py-3 rounded-full shadow-xl transition-opacity duration-300 pointer-events-none z-[80] text-sm md:text-base text-center max-w-[90%] ${bgClass}`;
-            
             toast.style.opacity = '1';
             setTimeout(() => {
                 toast.style.opacity = '0';
